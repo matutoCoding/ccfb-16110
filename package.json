@@ -1,0 +1,18 @@
+{
+  "name": "cooling-yard-sim",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test:physics": "esbuild scripts/selftest.ts --bundle --platform=node --format=esm --outfile=scripts/.tmp/selftest.mjs && node scripts/.tmp/selftest.mjs",
+    "test:stress": "esbuild scripts/stress_300.ts --bundle --platform=node --format=esm --outfile=scripts/.tmp/stress.mjs && node scripts/.tmp/stress.mjs"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.74",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

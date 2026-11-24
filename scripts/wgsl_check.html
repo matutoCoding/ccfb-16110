@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>wgsl-check</title></head>
+<body>
+<div id="out">pending</div>
+<script type="module" src="./wgsl_sources.js"></script>
+<script type="module">
+  const out = document.getElementById('out');
+  const log = (msg) => { console.log(msg); out.textContent += '\n' + msg; };
+  try {
+    if (!('gpu' in navigator)) throw new Error('no webgpu in navigator');
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) throw new Error('no adapter');
+    const device = await adapter.requestDevice();
+    device.addEventListener('uncapturederror', (e) => log('GPU-ERROR: ' + e.error.message));
+
+    const sources = window.SHADER_SOURCES;
+    let failed = 0;
+    for (const [name, code] of sources) {
+      const mod = device.createShaderModule({ code });
+      const info = await mod.getCompilationInfo();
+      const errs = info.messages.filter((x) => x.type === 'error');
+      if (errs.length) {
+        failed++;
+        for (const e of errs) log(`SHADER ${name} ERROR line ${e.lineNum}: ${e.message}`);
+      } else {
+        log(`shader ${name} compiled ok (${info.messages.length} note/warn)`);
+      }
+    }
+    log(failed === 0 ? 'ALL_WGSL_OK' : `WGSL_FAILED ${failed}`);
+    document.title = failed === 0 ? 'ALL_WGSL_OK' : 'WGSL_FAILED';
+  } catch (e) {
+    log('FATAL: ' + e.message + ' | ' + e.stack);
+    document.title = 'WGSL_FATAL';
+  }
+</script>
+</body>
+</html>
